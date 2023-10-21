@@ -17,10 +17,10 @@ v = 10 ** (vdB / 10)
 q2 = torch.mul(v, r2)
 q = torch.sqrt(q2)
 
-T = 200
+T = 200     # For other trajectories size need to be changed
 T_test = T
-m = 10
-n = 10
+m = 10      # For other vector size need to be changed
+n = 10      # For other vector size need to be changed
 F = torch.eye(10).to(dev)
 H = torch.diag(torch.tensor([0.1, 0.2, 0.3, 0.1, 0.2, 0.3, 0.1, 0.2, 0.3, 0.4])).to(dev)
 m1x_0 = torch.ones(m, 1).to(dev)

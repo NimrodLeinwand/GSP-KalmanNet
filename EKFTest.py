@@ -1,15 +1,10 @@
 import torch
 import torch.nn as nn
-import random
-import torch.nn.functional as func
 import time
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-from torch import autograd
-from EKF import ExtendedKalmanFilter
+from GSP_EKF import ExtendedKalmanFilter
 global N_T
-N_T = 100
+
+N_T = 100  # Need to change in case of larger test trajectories
 
 def EKFTest(SysModel, test_input, test_target, equation=13, model='regular',  modelKnowledge='full', allStates=True):
     N_T = test_target.size()[0]
@@ -29,7 +24,6 @@ def EKFTest(SysModel, test_input, test_target, equation=13, model='regular',  mo
     MSE_test_per_iter = torch.zeros(test_target.shape[2])
     stoper = True
     for j in range(0, N_T):
-        # print(test_input.shape)
         EKF.GenerateSequence(test_input[j, :, :], EKF.T_test)
         for t in range(0, SysModel.T):
             MSE_test_per_iter[t] = loss_fn(EKF.x[:, t], test_target[j, :, t])

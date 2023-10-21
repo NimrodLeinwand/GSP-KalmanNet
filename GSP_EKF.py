@@ -61,7 +61,7 @@ class ExtendedKalmanFilter:
         if self.model == 'NonLinear':
             self.UpdateJacobians(nl_getJacobian(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString),
                                  nl_getJacobian(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString))
-        else:
+        else:  # Pypower test
             self.UpdateJacobians(pypower_getJacobian(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString).to(dev),
                                  pypower_getJacobian(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString).to(dev))
 

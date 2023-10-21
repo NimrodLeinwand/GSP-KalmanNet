@@ -17,7 +17,6 @@ class SystemModel:
 
         self.f = f
         self.m = m
-        print("m,n = ",m,n)
         self.q = q
         self.Q = q * q * torch.eye(self.m)
 

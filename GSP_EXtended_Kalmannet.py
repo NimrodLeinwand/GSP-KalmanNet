@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
-# from Main_Pypower import dev
+
 if torch.cuda.is_available():
     dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
     torch.set_default_tensor_type('torch.cuda.FloatTensor')

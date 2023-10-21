@@ -1,13 +1,10 @@
 import torch
 import torch.nn as nn
 import random
-import torch.nn.functional as func
 import time
-import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
-from torch import autograd
 from EKFTest import N_T
+
 if torch.cuda.is_available():
     dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
     torch.set_default_tensor_type('torch.cuda.FloatTensor')

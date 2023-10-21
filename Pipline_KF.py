@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import time
 import random
-import torch.nn.functional as func
 # from Plot import Plot
+
 class Pipeline_KF:
 
     def __init__(self, Time, folderName, modelName):

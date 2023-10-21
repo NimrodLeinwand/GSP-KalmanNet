@@ -104,7 +104,7 @@ U, S, Vh = np.linalg.svd(prior_C_yy, full_matrices=True)
 S = np.diag(S)
 sqrt_R_y = np.matmul(np.matmul(U, np.sqrt(S)), Vh)
 
-pypower_m = 14
+pypower_m = 14         # For other cases need to be change according the case vector size
 pypower_n = pypower_m
 
 W, V = np.linalg.eig(pypower_L.cpu())
@@ -117,9 +117,8 @@ if torch.cuda.is_available():
     A = torch.diag(L)
     A = (A - L).cuda().clone().detach().requires_grad_(True)
 else:
-    # A1 = (torch.diag_embed(torch.diag(L)) - L).cpu.clone().detach().requires_grad_(True)
     A = torch.diag(L)
-    A = (A - L).cpu()#.clone().detach().requires_grad_(True)
+    A = (A - L).cpu()
 
 def pypower_f_EKF(x):
     if torch.cuda.is_available():
@@ -144,8 +143,6 @@ def pypower_h(y):
         v = torch.exp(1j * torch.tensor(theta, dtype=torch.float)).cuda().clone().detach().requires_grad_(True)
     else:
         v = torch.exp(1j * torch.tensor(theta, dtype=torch.float))
-
-    # v = torch.exp(1j * torch.tensor(theta, dtype=torch.float)).cuda().clone().detach().requires_grad_(True)
     trans = torch.transpose(Ybus, 1, 0)
     Ybus_conj_v = torch.bmm(torch.conj(trans).expand(B,-1,-1).float(), torch.conj(v).unsqueeze(-1).float()).clone().detach().requires_grad_(True)
     s = torch.mul(v.squeeze(), Ybus_conj_v.squeeze())
@@ -167,8 +164,5 @@ def pypower_getJacobian(x, a):
     if torch.isnan(x).any():
       print("Variable F contains NaN values. ", g)
     Jac = autograd.functional.jacobian(g, y)
-    if torch.isnan(Jac).any():
-      print(x)
-      print("Jac. ", g)
     Jac = Jac.view(-1, pypower_m)
     return Jac

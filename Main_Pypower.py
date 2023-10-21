@@ -14,7 +14,7 @@ else:
     print("Running on the CPU")
 
 from datetime import datetime
-from Extended_Sysmodel import SystemModel
+from GSP_Extended_Sysmodel import SystemModel
 from EKFTest import EKFTest
 from Power_Grid_Simulation_Parameters import pypower_m, pypower_n, pypower_f, pypower_h, pypower_L, pypower_V, pypower_V_t, pypower_f_EKF, pypower_h_EKF
 from Pipline_EKF import Pipeline_EKF
@@ -34,9 +34,9 @@ T_valid = T
 T_test = T
 nl_T = T
 nl_T_test = nl_T
-nl_m = pypower_m
-nl_n = pypower_n
-# torch.autograd.set_detect_anomaly(False)
+nl_m = pypower_m  # In case of nonlinear need to change to 10 or nl_m parameter from Non_Linear_Parameters
+nl_n = pypower_n  # In case of nonlinear need to change to 10 or nl_n parameter from Non_Linear_Parameters
+
 PFandUKF_test = False
 if torch.cuda.is_available() and not PFandUKF_test:
     dev = torch.device("cuda:0")
@@ -59,14 +59,14 @@ strNow = now.strftime("%H:%M:%S")
 strTime = strToday + "_" + strNow
 print("Current Time =", strTime)
 
-N_E = 4000 # train
-N_CV = 100 # validation
-N_T = 100  # test
+N_E = 4000  # train
+N_CV = 100  # validation
+N_T = 100   # test
 
 # All together
-# r2_list = [0,0.001, 0.01, 0.1, 1, 10]
+# r2_list = torch.tensor([0.001, 0.01, 0.1, 1, 10])
 l = torch.tensor([0.005, 0.01, 0.05, 0.1,0.5])
-r2 = l #torch.tensor([0,0.05, 0.1, 0.5, 1])
+r2 = l  # torch.tensor([0,0.05, 0.1, 0.5, 1])
 r = torch.sqrt(r2)
 vdB = -20
 # ratio v=q2/r2
@@ -84,6 +84,7 @@ SNR_RW_13 = []
 SNR_RW_20_diag = []
 Naive_MSE = []
 
+###### Decide which test to run #######
 kalmanNet = False
 GSP_KalmanNet = False
 GSP_EKF = False
@@ -94,15 +95,15 @@ for index in range(len(r2)):
     print("1/r2 [dB]: ", 10 * torch.log10(1 / r[index] ** 2), r2[index])
     print("1/q2 [dB]: ", 10 * torch.log10(1 / q[index] ** 2))
 
-    target = torch.load('./case57/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    observation = torch.load('./case57/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    target = torch.load('./pypower_data/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
+    observation = torch.load('./pypower_data/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     target = target[:N_T,:,:T_test].float()
     observation = observation[:N_T,:,:T_test].float()
-    nl_train_input = torch.load('./case57/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_input = torch.load('./case57/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_input = torch.load('./pypower_data/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_input = torch.load('./pypower_data/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_input = observation
-    nl_train_target = torch.load('./case57/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_target = torch.load('./case57/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_target = torch.load('./pypower_data/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_target = torch.load('./pypower_data/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_target = target
     nl_train_input = nl_train_input[:,:,:T].float()
     nl_cv_input = nl_cv_input[:N_CV,:,:T_valid].float()
@@ -193,32 +194,23 @@ for index in range(len(r2)):
         # compute the covariance matrix of the data
         covariance_matrix = torch.matmul(centered_data, centered_data.transpose(1, 2)) / (centered_data.size(2) - 1)
         avg_covariance_matrix = torch.mean(covariance_matrix, dim=0)
-        # m2x_0 = cov_matrix+covariance_matrix
         m2x_0 = covariance_matrix[0,:,:]
-        # m2x_0 = 0 * 0 * torch.zeros(nl_m, nl_m).to(dev)
         epsilon = torch.eye(pypower_m)*(1E-13)
         equation = 13
-        # Print(nl_test_input.shape)
         if torch.isnan(m2x_0).any():
             print("############## Variable F contains NaN values.")
 
         sys_model = SystemModel(pypower_f_EKF, q[index].to(dev), pypower_h_EKF, r[index].to(dev)*26, nl_T, nl_T_test, nl_m, nl_n, pypower_L.to(dev), pypower_V.to(dev), pypower_V_t.to(dev))
         sys_model.InitSequence(m1x_0, m2x_0)
 
-        # [MSE_finalize13, nl13_MSE_EKF_linear_arr, nl13_MSE_EKF_linear_avg, nl13_MSE_EKF_dB_avg, nl13_EKF_KG_array, nl13_EKF_out,
-        # nl13_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear')
-        # if torch.isnan(nl13_EKF_KG_array).any() or torch.isnan(nl13_MSE_EKF_linear_arr).any():
-        #     print("Output KG or MSE array contains NaN values!!!!!!!")
-
         # Diagonal-KG gsp-EKF
         print("GSP-EKF")
         equation = 20
         [MSE_finalize20, nl20_MSE_EKF_linear_arr, nl20_MSE_EKF_linear_avg, nl20_MSE_EKF_dB_avg, nl20_EKF_KG_array, nl20_EKF_out,
-        nl20_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear')
+        nl20_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'Pypower')
         if torch.isnan(nl20_EKF_KG_array).any() or torch.isnan(nl20_MSE_EKF_linear_arr).any():
             print("Output KG or MSE array contains NaN values!!!!!!!")
 
-        # nl_MSElist.append(nl13_MSE_EKF_dB_avg)
         nl_MSElist_diag.append(nl20_MSE_EKF_dB_avg)
 
     ######## EKF ###########
@@ -227,10 +219,7 @@ for index in range(len(r2)):
         centered_data = nl_test_target - mean.unsqueeze(2)
         covariance_matrix = torch.matmul(centered_data, centered_data.transpose(1, 2)) / (centered_data.size(2) - 1)
         avg_covariance_matrix = torch.mean(covariance_matrix, dim=0)
-        # m2x_0 = cov_matrix+covariance_matrix
         m2x_0 = covariance_matrix[0,:,:]
-        # m2x_0 = 0 * 0 * torch.zeros(nl_m, nl_m).to(dev)
-        # print("EKF Calculation",m2x_0)
         epsilon = torch.eye(nl_m)*(1E-13)
         equation = 13
         I = torch.eye(nl_m)
@@ -241,7 +230,7 @@ for index in range(len(r2)):
         sys_model.InitSequence(m1x_0, m2x_0)
 
         [MSE_finalize13, nl13_MSE_EKF_linear_arr, nl13_MSE_EKF_linear_avg, nl13_MSE_EKF_dB_avg, nl13_EKF_KG_array, nl13_EKF_out,
-        nl13_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear')
+        nl13_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'Pypower')
         if torch.isnan(nl13_EKF_KG_array).any() or torch.isnan(nl13_MSE_EKF_linear_arr).any():
             print("Output KG or MSE array contains NaN values!!!!!!!")
 

@@ -1,11 +1,5 @@
 import torch
-import torch.nn as nn
-import random
-import torch.nn.functional as func
-import time
 import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
 from torch import autograd
 
 PFandUKF_test = False
@@ -48,11 +42,11 @@ W, V = np.linalg.eig(nl_L)
 nl_V = torch.from_numpy(V).type(torch.DoubleTensor).to(dev)+epsilon
 nl_V_t = torch.transpose(nl_V, 0, 1).type(torch.DoubleTensor).to(dev).float()
 nl_V = nl_V.float()
-nl_T = 200
+nl_T = 200   # In case of other size of trajectory need to be changed
 T = nl_T
 nl_T_test = nl_T
-nl_n = 14
-nl_m = nl_n
+nl_n = 10    # In case of other size of vector need to be changed
+nl_m = nl_n  # In case of other size of vector need to be changed
 
 def nl_f(x):
     return 10*(x/10+torch.sin(x/9+3))
@@ -85,4 +79,3 @@ def nl_getJacobian(x, a):
     Jac = Jac.view(-1, nl_m)
     return Jac.to(dev)
 
-print(torch.matmul(nl_V_t,nl_V).shape)
