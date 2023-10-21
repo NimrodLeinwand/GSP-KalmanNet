@@ -1,6 +1,18 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from pypower.api import case118, makeYbus, case14, case30
+from pypower.idx_brch import F_BUS, T_BUS
+
+if torch.cuda.is_available():
+    dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print("Running on the GPU")
+else:
+    dev = torch.device("cpu")
+    torch.set_default_tensor_type('torch.FloatTensor')
+    print("Running on the CPU")
+
 from datetime import datetime
 from Extended_Sysmodel import SystemModel
 from EKFTest import EKFTest
@@ -15,14 +27,6 @@ def init_weights(module):
         init.xavier_uniform_(module.weight)
         module.bias.data.fill_(0.0)
 
-if torch.cuda.is_available():
-    dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    print("Running on the GPU")
-else:
-    dev = torch.device("cpu")
-    torch.set_default_tensor_type('torch.FloatTensor')
-    print("Running on the CPU")
 
 
 T = 100
@@ -80,9 +84,9 @@ SNR_RW_13 = []
 SNR_RW_20_diag = []
 Naive_MSE = []
 
-kalmanNet = True
-GSP_KalmanNet = True
-GSP_EKF = True
+kalmanNet = False
+GSP_KalmanNet = False
+GSP_EKF = False
 EKF = True
 
 for index in range(len(r2)):
@@ -90,15 +94,15 @@ for index in range(len(r2)):
     print("1/r2 [dB]: ", 10 * torch.log10(1 / r[index] ** 2), r2[index])
     print("1/q2 [dB]: ", 10 * torch.log10(1 / q[index] ** 2))
 
-    target = torch.load('/content/drive/MyDrive/Project/data/case57/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    observation = torch.load('/content/drive/MyDrive/Project/data/case57/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    target = torch.load('./case57/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
+    observation = torch.load('./case57/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     target = target[:N_T,:,:T_test].float()
     observation = observation[:N_T,:,:T_test].float()
-    nl_train_input = torch.load('/content/drive/MyDrive/Project/data/case57/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_input = torch.load('/content/drive/MyDrive/Project/data/case57/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_input = torch.load('./case57/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_input = torch.load('./case57/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_input = observation
-    nl_train_target = torch.load('/content/drive/MyDrive/Project/data/case57/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_target = torch.load('/content/drive/MyDrive/Project/data/case57/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_target = torch.load('./case57/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_target = torch.load('./case57/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_target = target
     nl_train_input = nl_train_input[:,:,:T].float()
     nl_cv_input = nl_cv_input[:N_CV,:,:T_valid].float()
@@ -130,7 +134,7 @@ for index in range(len(r2)):
           # KNet_model.apply(init_weights)
         KNet_model.Build(sys_model)
         KNet_model.apply(init_weights)
-        KNet_Pipeline.setModel(KNet_model,checkpoint)
+        KNet_Pipeline.setModel(KNet_model, checkpoint)
         KNet_Pipeline.setTrainingParams(n_Epochs=epochs, n_Batch=100 , learningRate=1e-4, weightDecay=0)
         if epochs != 2:
           KNet_Pipeline.NNTrain(N_E, nl_train_input, nl_train_target, N_CV, nl_cv_input, nl_cv_target)

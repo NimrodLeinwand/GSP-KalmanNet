@@ -8,6 +8,14 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from torch import autograd
 from EKFTest import N_T
+if torch.cuda.is_available():
+    dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print("Running on the GPU")
+else:
+    dev = torch.device("cpu")
+    torch.set_default_tensor_type('torch.FloatTensor')
+    print("Running on the CPU")
 
 class Pipeline_EKF:
 
@@ -26,7 +34,12 @@ class Pipeline_EKF:
         self.ssModel = ssModel
 
     def setModel(self, model,checkpoint):
-        self.model = model.to('cuda:0')
+        if torch.cuda.is_available():
+            self.model = model.to('cuda:0')
+        else:
+            self.model = model.to('cpu:0')
+
+        # self.model = model.to('cuda:0')
         self.checkpoint = checkpoint
         try:
           self.model.load_state_dict(checkpoint['model_state_dict'])

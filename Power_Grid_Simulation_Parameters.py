@@ -1,6 +1,10 @@
 import torch
 import numpy as np
 from torch import autograd
+from pypower.api import case118, makeYbus, case14, case30
+from pypower.idx_brch import F_BUS, T_BUS
+
+
 
 L14 = [
     [19.4980702055144, -15.2630865231796, 0, 0, -4.23498368233483, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -108,12 +112,18 @@ pypower_V = torch.from_numpy(V).type(torch.FloatTensor)
 pypower_V_t = torch.transpose(pypower_V, 0, 1)
 
 # Get adjacency matrix A from Laplacian matrix L
-A1 = (torch.diag_embed(torch.diag(L)) - L).cuda().clone().detach().requires_grad_(True)
-A = torch.diag(L)
-A = (A - L).cuda().clone().detach().requires_grad_(True)
+if torch.cuda.is_available():
+    A1 = (torch.diag_embed(torch.diag(L)) - L).cuda.clone().detach().requires_grad_(True)
+    A = torch.diag(L)
+    A = (A - L).cuda().clone().detach().requires_grad_(True)
+else:
+    # A1 = (torch.diag_embed(torch.diag(L)) - L).cpu.clone().detach().requires_grad_(True)
+    A = torch.diag(L)
+    A = (A - L).cpu()#.clone().detach().requires_grad_(True)
 
 def pypower_f_EKF(x):
-    x = x.cuda().clone().detach().requires_grad_(True)
+    if torch.cuda.is_available():
+        x = x.cuda().clone().detach().requires_grad_(True)
     return x.float()+0.05
 
 def pypower_h_EKF(y):
@@ -130,7 +140,12 @@ def pypower_f(x):
 def pypower_h(y):
     B = y.size()[0]
     theta = y
-    v = torch.exp(1j * torch.tensor(theta, dtype=torch.float)).cuda().clone().detach().requires_grad_(True)
+    if torch.cuda.is_available():
+        v = torch.exp(1j * torch.tensor(theta, dtype=torch.float)).cuda().clone().detach().requires_grad_(True)
+    else:
+        v = torch.exp(1j * torch.tensor(theta, dtype=torch.float))
+
+    # v = torch.exp(1j * torch.tensor(theta, dtype=torch.float)).cuda().clone().detach().requires_grad_(True)
     trans = torch.transpose(Ybus, 1, 0)
     Ybus_conj_v = torch.bmm(torch.conj(trans).expand(B,-1,-1).float(), torch.conj(v).unsqueeze(-1).float()).clone().detach().requires_grad_(True)
     s = torch.mul(v.squeeze(), Ybus_conj_v.squeeze())

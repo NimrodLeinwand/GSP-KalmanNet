@@ -51,7 +51,7 @@ nl_V = nl_V.float()
 nl_T = 200
 T = nl_T
 nl_T_test = nl_T
-nl_n = 10
+nl_n = 14
 nl_m = nl_n
 
 def nl_f(x):

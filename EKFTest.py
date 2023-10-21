@@ -9,6 +9,8 @@ from datetime import datetime
 from torch import autograd
 from EKF import ExtendedKalmanFilter
 global N_T
+N_T = 100
+
 def EKFTest(SysModel, test_input, test_target, equation=13, model='regular',  modelKnowledge='full', allStates=True):
     N_T = test_target.size()[0]
 

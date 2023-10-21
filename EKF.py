@@ -1,10 +1,19 @@
 import torch
-from Main_Pypower import dev
+# from Main_Pypower import dev
 import time
 from Non_Linear_Parameters import nl_getJacobian
 from Power_Grid_Simulation_Parameters import pypower_getJacobian
 
 epsilon = 0
+
+if torch.cuda.is_available():
+    dev = torch.device("cuda:0")  # you can continue going on here, like cuda:1 cuda:2....etc.
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    print("Running on the GPU")
+else:
+    dev = torch.device("cpu")
+    torch.set_default_tensor_type('torch.FloatTensor')
+    print("Running on the CPU")
 
 class ExtendedKalmanFilter:
 
