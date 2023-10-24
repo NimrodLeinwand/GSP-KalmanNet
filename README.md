@@ -8,6 +8,7 @@ KF to exploit the inherent graph structure via graph frequency domain filtering,
 and increases the robustness to small topology changes. Then, we use data to learn the Kalman gain following the recently proposed KalmanNet framework, which copes with partial and
 approximated modeling, without forcing a specific model over the noise statistics. Our empirical results demonstrate that the proposed GSP-KalmanNet achieves enhanced accuracy and run
 time performance as well as improved robustness to model misspecifications compared with both model-based and data-driven benchmarks.
+
 This article was submitted to IEEE Signal Processing Transaction.
 
 
