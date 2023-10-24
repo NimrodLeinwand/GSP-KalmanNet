@@ -1,1 +1,5 @@
 # GSP-KalmanNet
+
+In order to run the simulations all files except from data need to be on the same folder.
+The Pypowermain run Pypower on EKF mode, there are 4 boolean variables that can change for other types - EKF,GSP_EKF, GSP_KNet, KNet.
+For other simulation except Pypower need to change the data in Pypower main.
