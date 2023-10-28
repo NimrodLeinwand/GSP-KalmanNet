@@ -66,10 +66,6 @@ vdB = -20
 # ratio v=q2/r2
 v = 10 ** (vdB / 10)
 q2 = torch.mul(v, r2)*1000
-# q2 = torch.tensor([1.0000e-05, 1.0000e-04, 1.0000e-03, 1.0000e-02, 1.0000e-01])
-# q2 = torch.tensor([1000000*1.0000e-05, 10000*1.0000e-04, 120*1.0000e-03, 1.0000e-02, 1.0000e-01])
-# q2 = torch.tensor([0.8*1.0000e-02, 0.02*1.0000e-01, 0.7, 1, 5])
-# q2 = torch.tensor([0.0007, 1, 5, 1, 15]) # best for non linear n=10
 q = torch.sqrt(q2)
 EKF_result = torch.empty([len(r2), nl_m, T_test])
 epsilon = torch.eye(nl_n)*(1E-11)
@@ -101,11 +97,11 @@ for index in range(1,len(r2)):
     print(observation.size())
     target = target[:N_T,:,:T_test].float()
     observation = observation[:N_T,:,:T_test].float()
-    nl_train_input = torch.load('./data/Non Linear H x3/n=10/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_input = torch.load('./data/Non Linear H x3/n=10/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_input = torch.load('./data/non_linear/n=10/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_input = torch.load('./data/non_linear/n=10/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_input = observation
-    nl_train_target = torch.load('./data/Non Linear H x3/n=10/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_target = torch.load('./data/Non Linear H x3/n=10/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_target = torch.load('./data/non_linear/n=10/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_target = torch.load('./data/non_linear/n=10/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_target = target
     nl_train_input = nl_train_input[:,:,:T].float()
     nl_cv_input = nl_cv_input[:N_CV,:,:T_valid].float()
