@@ -64,13 +64,13 @@ N_CV = 100  # validation
 N_T = 100   # test
 
 # All together
-# r2 = torch.tensor([0.005, 0.01, 0.05, 0.1,0.5])  # for Exponential noise case57 data
-r2 = torch.tensor([0.001, 0.01, 0.1, 1, 10])  # for gaussian noise
+r2 = torch.tensor([0.005, 0.01, 0.05, 0.1,0.5])  # for Exponential noise case57 data
+# r2 = torch.tensor([0.001, 0.01, 0.1, 1, 10])  # for gaussian noise
 r = torch.sqrt(r2)
 vdB = -20
 # ratio v=q2/r2
 v = 10 ** (vdB / 10)
-q2 = torch.mul(v, r2)/100
+q2 = torch.mul(v, r2)
 q = torch.sqrt(q2)
 EKF_result = torch.empty([len(r2), nl_m, T_test])
 epsilon = torch.eye(nl_n)*(1E-11)
@@ -94,17 +94,17 @@ for index in range(len(r2)):
     print("1/r2 [dB]: ", 10 * torch.log10(1 / r[index] ** 2), r2[index])
     print("1/q2 [dB]: ", 10 * torch.log10(1 / q[index] ** 2))
 
-    target = torch.load('./data/pypower14f/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    observation = torch.load('./data/pypower14f/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    target = torch.load('./data/case57/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
+    observation = torch.load('./data/case57/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     print(target.size())
     print(observation.size())
     target = target[:N_T,:,:T_test].float()
     observation = observation[:N_T,:,:T_test].float()
-    nl_train_input = torch.load('./data/pypower14f/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_input = torch.load('./data/pypower14f/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_input = torch.load('./data/case57/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_input = torch.load('./data/case57/valid_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_input = observation
-    nl_train_target = torch.load('./data/pypower14f/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
-    nl_cv_target = torch.load('./data/pypower14f/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_train_target = torch.load('./data/case57/train_target_r2_' + str(r2[index]) + '.pt').to(dev)
+    nl_cv_target = torch.load('./data/case57/valid_target_r2_' + str(r2[index]) + '.pt').to(dev)
     nl_test_target = target
     nl_train_input = nl_train_input[:,:,:T].float()
     nl_cv_input = nl_cv_input[:N_CV,:,:T_valid].float()
