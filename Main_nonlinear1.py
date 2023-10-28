@@ -14,7 +14,7 @@ else:
 from datetime import datetime
 from GSP_Extended_Sysmodel import SystemModel
 from EKFTest import EKFTest
-from Non_Linear2_Parameters import nl_m, nl_n, nl_f, nl_h, nl_L, nl_V, nl_V_t, nl_f_EKF, nl_h_EKF
+from Non_Linear1_Parameters import nl_m, nl_n, nl_f, nl_h, nl_L, nl_V, nl_V_t, nl_f_EKF, nl_h_EKF
 from Pipline_EKF import Pipeline_EKF
 from Ex_Kalmannet import ExtendedKalmanNetNN
 from GSP_EXtended_Kalmannet import GSPExtendedKalmanNetNN
@@ -65,7 +65,11 @@ r = torch.sqrt(r2)
 vdB = -20
 # ratio v=q2/r2
 v = 10 ** (vdB / 10)
-q2 = torch.mul(v, r2)*10
+q2 = torch.mul(v, r2)*1000
+# q2 = torch.tensor([1.0000e-05, 1.0000e-04, 1.0000e-03, 1.0000e-02, 1.0000e-01])
+# q2 = torch.tensor([1000000*1.0000e-05, 10000*1.0000e-04, 120*1.0000e-03, 1.0000e-02, 1.0000e-01])
+# q2 = torch.tensor([0.8*1.0000e-02, 0.02*1.0000e-01, 0.7, 1, 5])
+# q2 = torch.tensor([0.0007, 1, 5, 1, 15]) # best for non linear n=10
 q = torch.sqrt(q2)
 EKF_result = torch.empty([len(r2), nl_m, T_test])
 epsilon = torch.eye(nl_n)*(1E-11)
@@ -84,15 +88,15 @@ GSP_KalmanNet = False
 GSP_EKF = False
 EKF = True
 
-for index in range(len(r2)):
+for index in range(1,len(r2)):
 
     print("1/r2 [dB]: ", 10 * torch.log10(1 / r[index] ** 2), r2[index])
     print("1/q2 [dB]: ", 10 * torch.log10(1 / q[index] ** 2))
 
-    target = torch.load('./data/Non Linear H x3/n=10/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    observation = torch.load('./data/Non Linear H x3/n=10/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    # target = torch.load('./data/Hx3-visual/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    # observation = torch.load('./data/Hx3-visual/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    target = torch.load('./data/non_linear/n=10/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
+    observation = torch.load('./data/non_linear/n=10/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
+    # target = torch.load('./data/Non Linear new H/n=30/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
+    # observation = torch.load('./data/Non Linear new H/n=30/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
     print(target.size())
     print(observation.size())
     target = target[:N_T,:,:T_test].float()
@@ -197,14 +201,14 @@ for index in range(len(r2)):
         if torch.isnan(m2x_0).any():
             print("############## Variable F contains NaN values.")
 
-        sys_model = SystemModel(nl_f_EKF, q[index].to(dev), nl_h_EKF, r[index].to(dev)*26, nl_T, nl_T_test, nl_m, nl_n, nl_L.to(dev), nl_V.to(dev), nl_V_t.to(dev))
+        sys_model = SystemModel(nl_f_EKF, q[index].to(dev), nl_h_EKF, r[index].to(dev), nl_T, nl_T_test, nl_m, nl_n, nl_L.to(dev), nl_V.to(dev), nl_V_t.to(dev))
         sys_model.InitSequence(m1x_0, m2x_0)
 
         # Diagonal-KG gsp-EKF
         print("GSP-EKF")
         equation = 20
         [MSE_finalize20, nl20_MSE_EKF_linear_arr, nl20_MSE_EKF_linear_avg, nl20_MSE_EKF_dB_avg, nl20_EKF_KG_array, nl20_EKF_out,
-        nl20_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear2')
+        nl20_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear1')
         if torch.isnan(nl20_EKF_KG_array).any() or torch.isnan(nl20_MSE_EKF_linear_arr).any():
             print("Output KG or MSE array contains NaN values!!!!!!!")
 
@@ -223,11 +227,11 @@ for index in range(len(r2)):
         if torch.isnan(m2x_0).any():
             print("############## Variable F contains NaN values.")
 
-        sys_model = SystemModel(nl_f_EKF, q[index].to(dev), nl_h_EKF, r[index].to(dev)*26, nl_T, nl_T_test, nl_m, nl_n, I.to(dev), I.to(dev), I.to(dev))
+        sys_model = SystemModel(nl_f_EKF, q[index].to(dev), nl_h_EKF, r[index].to(dev), nl_T, nl_T_test, nl_m, nl_n, I.to(dev), I.to(dev), I.to(dev))
         sys_model.InitSequence(m1x_0, m2x_0)
 
         [MSE_finalize13, nl13_MSE_EKF_linear_arr, nl13_MSE_EKF_linear_avg, nl13_MSE_EKF_dB_avg, nl13_EKF_KG_array, nl13_EKF_out,
-        nl13_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear2')
+        nl13_SNR] = EKFTest(sys_model, nl_test_input, nl_test_target, equation, 'NonLinear1')
         if torch.isnan(nl13_EKF_KG_array).any() or torch.isnan(nl13_MSE_EKF_linear_arr).any():
             print("Output KG or MSE array contains NaN values!!!!!!!")
 
