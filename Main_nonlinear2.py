@@ -91,10 +91,6 @@ for index in range(len(r2)):
 
     target = torch.load('./data/Non Linear H x3/n=10/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
     observation = torch.load('./data/Non Linear H x3/n=10/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    # target = torch.load('./data/Hx3-visual/test_target_r2_'+ str(r2[index]) + '.pt').to(dev)
-    # observation = torch.load('./data/Hx3-visual/test_observation_r2_' + str(r2[index]) + '.pt').to(dev)
-    print(target.size())
-    print(observation.size())
     target = target[:N_T,:,:T_test].float()
     observation = observation[:N_T,:,:T_test].float()
     nl_train_input = torch.load('./data/Non Linear H x3/n=10/train_observation_r2_' + str(r2[index]) + '.pt').to(dev)
