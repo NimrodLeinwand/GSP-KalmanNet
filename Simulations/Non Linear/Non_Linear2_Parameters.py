@@ -48,22 +48,27 @@ nl_T_test = nl_T
 nl_n = 10    # In case of other size of vector need to be changed
 nl_m = nl_n  # In case of other size of vector need to be changed
 
-def nl_f(x):
-    return 10*(x/10+torch.sin(x/9+3))
+if torch.cuda.is_available():
+    A = torch.diag(nl_L)
+    A = (A - nl_L).cuda().clone().detach().requires_grad_(True)
+else:
+    A = torch.diag(nl_L)
+    A = (A - nl_L).cpu().float()
 
+def nl_f(x):
+    return (x + torch.sin(x/10+3) * 10).to(dev)
 
 def nl_h(x):
-    return 3 * x
-
+    return 0.5 * x + 0.5 * torch.pow(x, 3)
 
 def nl_f_EKF(x):
-    return 10*(x/10+torch.sin(x/9+3)).to(dev)
+    return (x + torch.sin(x/10+3) * 10).to(dev)
 
 def nl_h_EKF(x):
-    return 3 * x
+    return 0.5 * x + 0.5 * torch.pow(x, 3)
 
 
-def nl_getJacobian(x, a):
+def nl_getJacobian2(x, a):
     try:
         if (x.size()[1] == 1):
             y = torch.reshape((x.T), [x.size()[0]])
