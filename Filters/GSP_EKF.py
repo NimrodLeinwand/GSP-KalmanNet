@@ -1,7 +1,8 @@
 import torch
 # from Main_Pypower import dev
 import time
-from Non_Linear_Parameters import nl_getJacobian
+from Non_Linear1_Parameters import nl_getJacobian1
+from Non_Linear2_Parameters import nl_getJacobian2
 from Power_Grid_Simulation_Parameters import pypower_getJacobian
 
 epsilon = 0
@@ -58,9 +59,12 @@ class ExtendedKalmanFilter:
         # Predict the 1-st moment of x
         self.m1x_prior = torch.matmul(self.V_t.float().to(dev), torch.squeeze(self.f(torch.matmul(self.V.float().to(dev), self.m1x_posterior.float().to(dev))).float()).to(dev))  # X_hat t|t-1 (equation 21)
         # Compute the Jacobians
-        if self.model == 'NonLinear':
-            self.UpdateJacobians(nl_getJacobian(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString),
-                                 nl_getJacobian(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString))
+        if self.model == 'NonLinear1':
+            self.UpdateJacobians(nl_getJacobian1(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString),
+                                 nl_getJacobian1(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString))
+        elif self.model == 'NonLinear2':
+            self.UpdateJacobians(nl_getJacobian2(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString),
+                                 nl_getJacobian2(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString))
         else:  # Pypower test
             self.UpdateJacobians(pypower_getJacobian(torch.matmul(self.V, self.m1x_posterior.float().to(dev)), self.fString).to(dev),
                                  pypower_getJacobian(torch.matmul(self.V, self.m1x_prior.float().to(dev)), self.hString).to(dev))
