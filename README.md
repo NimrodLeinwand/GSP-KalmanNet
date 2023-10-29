@@ -17,7 +17,8 @@ For running with Colab you can register the link https://colab.research.google.c
 Explanation of data sets:
 
 1) non_linear - First nonlinear state evolution model from the article. f(x) = sin(x) + cos(x + A*x), h(x) = 3*x.
-2) Non Linear H x3 - Second nonlinear state evolution model from the article. f(x) = x + sin(x/10 + 3), h(x) = 0.5 * x + 0.5 * torch.pow(x, 3).
-3) pypower14 - Power grid data set with Gaussian noise.
-4) case57 - Power grid data set with exponential noise.
+2) Non Linear H x3 - Second nonlinear state evolution model from the article.
+3) f(x) = x + sin(x/10 + 3), h(x) = 0.5 * x + 0.5 * x^3.
+4) pypower14 - Power grid data set with Gaussian noise.
+5) case57 - Power grid data set with exponential noise.
 
