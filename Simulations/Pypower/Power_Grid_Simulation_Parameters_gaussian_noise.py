@@ -121,7 +121,8 @@ else:
 def pypower_f_EKF(x):
     if torch.cuda.is_available():
         x = x.cuda().clone().detach().requires_grad_(True)
-    return x.float()+0.05     # for exponential noise
+    return x.float()        # for gaussian noise
+    # return x.float()+0.05     # for exponential noise
 
 def pypower_h_EKF(y):
     v = torch.exp(1j * y)
@@ -131,7 +132,8 @@ def pypower_h_EKF(y):
     return p
 
 def pypower_f(x):
-    return x.float()+0.05     # for exponential noise
+    return x.float()        # for gaussian noise
+    # return x.float()+0.05     # for exponential noise
 
 
 def pypower_h(y):
