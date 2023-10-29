@@ -16,7 +16,7 @@ else:
 from datetime import datetime
 from GSP_Extended_Sysmodel import SystemModel
 from EKFTest import EKFTest
-from Power_Grid_Simulation_Parameters import pypower_m, pypower_n, pypower_f, pypower_h, pypower_L, pypower_V, pypower_V_t, pypower_f_EKF, pypower_h_EKF
+from Power_Grid_Simulation_Parameters_exp_noise import pypower_m, pypower_n, pypower_f, pypower_h, pypower_L, pypower_V, pypower_V_t, pypower_f_EKF, pypower_h_EKF
 from Pipline_EKF import Pipeline_EKF
 from Ex_Kalmannet import ExtendedKalmanNetNN
 from GSP_EXtended_Kalmannet import GSPExtendedKalmanNetNN
