@@ -3,7 +3,7 @@ import torch
 import time
 from Non_Linear1_Parameters import nl_getJacobian1
 from Non_Linear2_Parameters import nl_getJacobian2
-from Power_Grid_Simulation_Parameters import pypower_getJacobian
+from Power_Grid_Simulation_Parameters_gaussian_noise import pypower_getJacobian
 
 epsilon = 0
 
